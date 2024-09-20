@@ -26,8 +26,9 @@ public class UsuarioService {
     }
 
     public Usuario buscarPorEmail(String email) {
-        return usuarioRepository.findByEmail(email);
+        return usuarioRepository.findByEmail(email).orElse(null);
     }
+    
 
     public void deletar(Long id) {
         usuarioRepository.deleteById(id);
