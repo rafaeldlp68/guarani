@@ -5,6 +5,7 @@ import com.meuprojeto.guarani.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,9 +17,14 @@ public class UsuarioController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // 1. Criar um novo usuário
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    // 1. Criar um novo usuário com senha criptografada
     @PostMapping
     public ResponseEntity<Usuario> criarUsuario(@RequestBody Usuario usuario) {
+        // Criptografar a senha antes de salvar
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         Usuario novoUsuario = usuarioRepository.save(usuario);
         return new ResponseEntity<>(novoUsuario, HttpStatus.CREATED);
     }
@@ -38,14 +44,15 @@ public class UsuarioController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    // 4. Atualizar um usuário
+    // 4. Atualizar um usuário com senha criptografada
     @PutMapping("/{id}")
     public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuarioAtualizado) {
         return usuarioRepository.findById(id)
                 .map(usuario -> {
                     usuario.setNome(usuarioAtualizado.getNome());
                     usuario.setEmail(usuarioAtualizado.getEmail());
-                    usuario.setSenha(usuarioAtualizado.getSenha());
+                    // Criptografar a senha antes de atualizar
+                    usuario.setSenha(passwordEncoder.encode(usuarioAtualizado.getSenha()));
                     Usuario atualizado = usuarioRepository.save(usuario);
                     return new ResponseEntity<>(atualizado, HttpStatus.OK);
                 })
